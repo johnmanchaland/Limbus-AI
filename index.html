@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limbus Company - Internal Terminal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        limbus: {
+                            dark: '#08080a',
+                            panel: '#101115',
+                            border: '#2a2b36',
+                            crimson: '#b91c1c',
+                            crimsonBright: '#ef4444',
+                            gold: '#d4af37',
+                            steel: '#94a3b8',
+                            danger: '#dc2626'
+                        }
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        mono: ['Share Tech Mono', 'monospace'],
+                        orbitron: ['Orbitron', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- FontAwesome for corporate/industrial icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #08080a;
+            color: #e2e8f0;
+            font-family: 'Share Tech Mono', monospace;
+            overflow-x: hidden;
+        }
+
+        /* Scanline overlay for dystopian CRT feel */
+        .scanlines {
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 3px, 6px 100%;
+            pointer-events: none;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #08080a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b91c1c;
+            border-radius: 2px;
+        }
+
+        .crimson-glow {
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.6), 0 0 20px rgba(185, 28, 28, 0.4);
+        }
+        .gold-glow {
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
+        }
+        .box-glow {
+            box-shadow: 0 0 15px rgba(185, 28, 28, 0.2), inset 0 0 15px rgba(185, 28, 28, 0.05);
+        }
+        
+        /* Diagonal hazard stripes for industrial look */
+        .hazard-stripes {
+            background: repeating-linear-gradient(
+                -45deg,
+                #101115,
+                #101115 10px,
+                #1b1c24 10px,
+                #1b1c24 20px
+            );
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative selection:bg-red-900 selection:text-white">
+
+    <!-- CRT Scanline Effect Layer -->
+    <div class="scanlines fixed inset-0 z-50 pointer-events-none opacity-60"></div>
+
+    <!-- Top Corporate Ticker -->
+    <div class="bg-black border-b border-limbus-border py-1 px-4 text-xs tracking-widest text-limbus-steel flex justify-between items-center z-40">
+        <div class="flex items-center space-x-4 overflow-hidden whitespace-nowrap">
+            <span class="text-limbus-crimsonBright animate-pulse"><i class="fa-solid fa-triangle-exclamation mr-1"></i> NOTICE:</span>
+            <span class="inline-block animate-[marquee_20s_linear_infinite]">GOLDEN BOUGH EXTRACTION IN SECTOR 4 ONGOING — DANTE'S NOTES REQUIRE SYNCHRONIZATION — MEPHISTOPHELES FUEL RESERVES STABLE</span>
+        </div>
+        <div class="hidden md:flex items-center space-x-6">
+            <span>DANTEC: <span class="text-limbus-gold font-bold" id="live-clock">--:--:--</span></span>
+            <span>CLEARANCE: <span class="text-limbus-crimsonBright">LEVEL 1 MANAGER</span></span>
+        </div>
+    </div>
+
+    <!-- Main Navigation Bar -->
+    <header class="bg-limbus-panel border-b-2 border-limbus-crimson sticky top-0 z-40 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Logo Brand -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+                <div class="w-12 h-12 bg-gradient-to-br from-limbus-crimson to-black border border-limbus-gold flex items-center justify-center transform rotate-45 shadow-lg">
+                    <span class="transform -rotate-45 text-limbus-gold font-cinzel font-black text-xl">LC</span>
+                </div>
+                <div>
+                    <h1 class="font-cinzel font-black text-xl tracking-wider text-white flex items-center">
+                        LIMBUS <span class="text-limbus-crimsonBright ml-1">COMPANY</span>
+                    </h1>
+                    <p class="text-[10px] tracking-widest text-limbus-steel font-orbitron">THE CITY BRANCH // TERMINAL v4.8</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="hidden lg:flex items-center space-x-1 font-orbitron text-xs">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-4 py-2 border-b-2 border-limbus-crimson text-white bg-black/40 transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-terminal"></i><span>DASHBOARD</span>
+                </button>
+                <button onclick="switchTab('sinners')" id="nav-sinners" class="nav-btn px-4 py-2 border-b-2 border-transparent text-limbus-steel hover:text-white hover:bg-black/20 transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-users"></i><span>SINNER ROSTER</span>
+                </button>
+                <button onclick="switchTab('bus')" id="nav-bus" class="nav-btn px-4 py-2 border-b-2 border-transparent text-limbus-steel hover:text-white hover:bg-black/20 transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-bus"></i><span>BUS FLEET</span>
+                </button>
+                <button onclick="switchTab('bough')" id="nav-bough" class="nav-btn px-4 py-2 border-b-2 border-transparent text-limbus-steel hover:text-white hover:bg-black/20 transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-gem"></i><span>GOLDEN BOUGH</span>
+                </button>
+                <button onclick="switchTab('announcements')" id="nav-announcements" class="nav-btn px-4 py-2 border-b-2 border-transparent text-limbus-steel hover:text-white hover:bg-black/20 transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-bullhorn"></i><span>ANNOUNCEMENTS</span>
+                </button>
+            </nav>
+
+            <!-- Mobile Menu Toggle -->
+            <div class="lg:hidden flex items-center">
+                <button onclick="toggleMobileMenu()" class="text-limbus-steel hover:text-white p-2">
+                    <i class="fa-solid fa-bars text-xl" id="mobile-menu-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden lg:hidden bg-black/95 border-b border-limbus-border px-4 py-4 space-y-2 font-orbitron text-xs">
+            <button onclick="switchTab('dashboard'); toggleMobileMenu();" class="block w-full text-left px-3 py-2 text-white bg-limbus-crimson/20 border-l-2 border-limbus-crimson">DASHBOARD</button>
+            <button onclick="switchTab('sinners'); toggleMobileMenu();" class="block w-full text-left px-3 py-2 text-limbus-steel hover:text-white">SINNER ROSTER</button>
+            <button onclick="switchTab('bus'); toggleMobileMenu();" class="block w-full text-left px-3 py-2 text-limbus-steel hover:text-white">BUS FLEET</button>
+            <button onclick="switchTab('bough'); toggleMobileMenu();" class="block w-full text-left px-3 py-2 text-limbus-steel hover:text-white">GOLDEN BOUGH</button>
+            <button onclick="switchTab('announcements'); toggleMobileMenu();" class="block w-full text-left px-3 py-2 text-limbus-steel hover:text-white">ANNOUNCEMENTS</button>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ================= TAB 1: DASHBOARD ================= -->
+        <div id="tab-content-dashboard" class="space-y-6">
+            <!-- Welcome Banner & Quick Status -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Main Banner -->
+                <div class="lg:col-span-2 bg-limbus-panel border border-limbus-border p-6 relative overflow-hidden box-glow">
+                    <div class="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-limbus-crimson/10 to-transparent pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center space-x-2 text-xs font-orbitron text-limbus-crimsonBright mb-2">
+                            <span class="inline-block w-2 h-2 rounded-full bg-limbus-crimsonBright animate-ping"></span>
+                            <span>STATUS: ACTIVE OPERATION // DISTRICT 4</span>
+                        </div>
+                        <h2 class="text-3xl font-cinzel font-black tracking-wider text-white mb-3">WELCOME, MANAGER DANTE</h2>
+                        <p class="text-limbus-steel text-sm mb-6 max-w-xl leading-relaxed">
+                            Mephistopheles is currently traversing the highway toward the designated Golden Bough coordinates. Keep all 12 Sinners synchronized and maintain fuel consumption metrics to prevent corporate reprimand.
+                        </p>
+                        <div class="flex flex-wrap gap-4 font-orbitron text-xs">
+                            <button onclick="switchTab('sinners')" class="px-6 py-3 bg-limbus-crimson hover:bg-red-700 text-white font-bold tracking-wider border border-red-500 transition shadow-lg flex items-center space-x-2">
+                                <span class="text-limbus-gold">01</span><span>INSPECT SINNERS</span>
+                            </button>
+                            <button onclick="switchTab('bus')" class="px-6 py-3 bg-black hover:bg-limbus-panel text-limbus-steel hover:text-white border border-limbus-border transition flex items-center space-x-2">
+                                <span class="text-limbus-gold">02</span><span>MEPHISTOPHELES STATUS</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Quick Diagnostics Widget -->
+                <div class="bg-limbus-panel border border-limbus-border p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-4 border-b border-limbus-border pb-2">
+                            <span class="font-orbitron text-xs text-limbus-gold tracking-widest"><i class="fa-solid fa-gauge-high mr-2"></i>CORP METRICS</span>
+                            <span class="text-xs text-emerald-400 font-mono animate-pulse">LIVE FEED</span>
+                        </div>
+                        <div class="space-y-4 font-orbitron text-xs">
+                            <div>
+                                <div class="flex justify-between text-limbus-steel mb-1">
+                                    <span>LUNACY RESERVES</span>
+                                    <span class="text-white font-bold">1,850 ⟡</span>
+                                </div>
+                                <div class="w-full bg-black h-2 rounded-sm overflow-hidden border border-limbus-border">
+                                    <div class="bg-limbus-gold h-full w-[75%]"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-limbus-steel mb-1">
+                                    <span>MODULE EFFICIENCY</span>
+                                    <span class="text-white font-bold">94.2%</span>
+                                </div>
+                                <div class="w-full bg-black h-2 rounded-sm overflow-hidden border border-limbus-border">
+                                    <div class="bg-limbus-crimsonBright h-full w-[94%]"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-limbus-steel mb-1">
+                                    <span>SINNER CORRUPTION</span>
+                                    <span class="text-yellow-500 font-bold">STABLE (12.4%)</span>
+                                </div>
+                                <div class="w-full bg-black h-2 rounded-sm overflow-hidden border border-limbus-border">
+                                    <div class="bg-yellow-600 h-full w-[12%]"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-limbus-border text-[11px] text-limbus-steel flex justify-between">
+                        <span>ENKIDU PROTOCOL</span>
+                        <span class="text-limbus-crimsonBright font-bold">ARMED</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Mephistopheles Quick Status Monitor -->
+            <div class="bg-limbus-panel border border-limbus-border p-6 box-glow">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b border-limbus-border gap-4">
+                    <div>
+                        <h3 class="font-cinzel font-bold text-xl text-white tracking-wide">MEPHISTOPHELES BUS FLEET STATUS</h3>
+                        <p class="text-xs text-limbus-steel font-orbitron">REAL-TIME DIAGNOSTIC TELEMETRY & ENGINE INTEGRITY</p>
+                    </div>
+                    <button onclick="triggerBusDiagnostic()" class="px-4 py-2 bg-black border border-limbus-crimson text-limbus-crimsonBright hover:bg-limbus-crimson hover:text-white transition font-orbitron text-xs flex items-center space-x-2">
+                        <i class="fa-solid fa-rotate" id="diag-icon"></i><span>RUN FULL DIAGNOSTIC</span>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 font-orbitron">
+                    <div class="bg-black/60 p-4 border border-limbus-border rounded">
+                        <span class="text-xs text-limbus-steel block mb-1">ENGINE CORE</span>
+                        <span class="text-lg font-bold text-white" id="stat-engine">OPTIMAL (98%)</span>
+                        <div class="text-[10px] text-emerald-400 mt-1"><i class="fa-solid fa-arrow-up"></i> Stable temperature</div>
+                    </div>
+                    <div class="bg-black/60 p-4 border border-limbus-border rounded">
+                        <span class="text-xs text-limbus-steel block mb-1">BLOOD FUEL LEVEL</span>
+                        <span class="text-lg font-bold text-limbus-crimsonBright" id="stat-fuel">7,420 L</span>
+                        <div class="text-[10px] text-limbus-steel mt-1">Sufficient for 3 districts</div>
+                    </div>
+                    <div class="bg-black/60 p-4 border border-limbus-border rounded">
+                        <span class="text-xs text-limbus-steel block mb-1">CABIN ANOMALIES</span>
+                        <span class="text-lg font-bold text-yellow-500" id="stat-anomalies">0 DETECTED</span>
+                        <div class="text-[10px] text-limbus-steel mt-1">Sinners resting</div>
+                    </div>
+                    <div class="bg-black/60 p-4 border border-limbus-border rounded">
+                        <span class="text-xs text-limbus-steel block mb-1">AUTONOMOUS DRIVE</span>
+                        <span class="text-lg font-bold text-limbus-gold" id="stat-drive">CHARON ACTIVE</span>
+                        <div class="text-[10px] text-limbus-gold mt-1">Speed: 110 km/h</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Sinner Preview Carousel / Grid -->
+            <div>
+                <div class="flex justify-between items-end mb-4">
+                    <div>
+                        <h3 class="font-cinzel font-bold text-2xl text-white tracking-wide">ACTIVE SINNER ROSTER</h3>
+                        <p class="text-xs text-limbus-steel font-orbitron">SELECT A SINNER TO VIEW FULL DOSSIER & E.G.O GEAR</p>
+                    </div>
+                    <button onclick="switchTab('sinners')" class="text-xs font-orbitron text-limbus-crimsonBright hover:underline flex items-center space-x-1">
+                        <span>VIEW ALL 12 SINNERS</span><i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4" id="dashboard-sinner-grid">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================= TAB 2: SINNER ROSTER ================= -->
+        <div id="tab-content-sinners" class="hidden space-y-6">
+            <div class="border-b border-limbus-border pb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                <div>
+                    <h2 class="font-cinzel font-black text-3xl text-white tracking-wider">SINNER ROSTER & DOSSIERS</h2>
+                    <p class="text-xs font-orbitron text-limbus-steel">PERSONNEL MANAGEMENT // LEVEL 12 CLEARANCE REQUIRED FOR FULL E.G.O SYNC</p>
+                </div>
+                <!-- Filter buttons -->
+                <div class="flex flex-wrap gap-2 font-orbitron text-xs">
+                    <button onclick="filterSinners('all')" class="sinner-filter-btn px-3 py-1.5 bg-limbus-crimson text-white font-bold border border-red-500">ALL</button>
+                    <button onclick="filterSinners('fixer')" class="sinner-filter-btn px-3 py-1.5 bg-black text-limbus-steel border border-limbus-border hover:text-white">FIXERS</button>
+                    <button onclick="filterSinners('syndicate')" class="sinner-filter-btn px-3 py-1.5 bg-black text-limbus-steel border border-limbus-border hover:text-white">SYNDICATE</button>
+                </div>
+            </div>
+
+            <!-- Main Sinner Layout Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left Sinner Selector List -->
+                <div class="lg:col-span-4 bg-limbus-panel border border-limbus-border p-4 max-h-[700px] overflow-y-auto space-y-2" id="sinner-list-container">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Right Sinner Detailed Dossier -->
+                <div class="lg:col-span-8 bg-limbus-panel border border-limbus-border p-6 relative box-glow flex flex-col justify-between" id="sinner-dossier-panel">
+                    <!-- Dynamically populated based on selected sinner -->
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================= TAB 3: BUS FLEET & DIAGNOSTICS ================= -->
+        <div id="tab-content-bus" class="hidden space-y-6">
+            <div class="border-b border-limbus-border pb-4">
+                <h2 class="font-cinzel font-black text-3xl text-white tracking-wider">MEPHISTOPHELES BUS FLEET & STATUS</h2>
+                <p class="text-xs font-orbitron text-limbus-steel">MOBILE EXTRACTION VEHICLE // CENTRAL ENGINE & CABIN MONITORING</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Bus Visual Diagram Card -->
+                <div class="lg:col-span-2 bg-limbus-panel border border-limbus-border p-6 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute inset-0 hazard-stripes opacity-10 pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="font-orbitron text-xs text-limbus-gold"><i class="fa-solid fa-bus mr-2"></i>CHASSIS MODEL: MEPHISTOPHELES-X9</span>
+                            <span class="px-2 py-1 bg-red-900/60 border border-limbus-crimson text-limbus-crimsonBright font-orbitron text-[10px]">ARMORED HEAVY</span>
+                        </div>
+                        
+                        <!-- ASCII / Graphic Bus Representation -->
+                        <div class="bg-black/80 border border-limbus-border p-6 rounded-lg text-center my-6 relative">
+                            <div class="absolute top-2 left-2 text-[10px] font-orbitron text-limbus-steel">DIAGNOSTIC SCHEMATIC v2.1</div>
+                            <div class="py-8 text-limbus-crimsonBright text-2xl md:text-4xl font-orbitron tracking-widest animate-pulse">
+                                [==[ 🚍 MEPHISTOPHELES ]==]
+                            </div>
+                            <div class="flex justify-around text-xs font-orbitron text-limbus-steel mt-4 border-t border-limbus-border pt-4">
+                                <div><span class="text-white block">CABIN A</span>12 Sinners Asleep</div>
+                                <div><span class="text-white block">CABIN B</span>Dante's Terminal Active</div>
+                                <div><span class="text-white block">ENGINE</span>Blood Boiler Stable</div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 font-orbitron text-xs">
+                            <div class="bg-black/40 p-4 border border-limbus-border">
+                                <span class="text-limbus-steel block mb-1">MAX SPEED</span>
+                                <span class="text-white font-bold text-base">180 KM/H (HIGHWAY MODE)</span>
+                            </div>
+                            <div class="bg-black/40 p-4 border border-limbus-border">
+                                <span class="text-limbus-steel block mb-1">DEFENSE PLATING</span>
+                                <span class="text-emerald-400 font-bold text-base">TITANIUM-COMPOSITE (99%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bus Controls & Maintenance -->
+                <div class="bg-limbus-panel border border-limbus-border p-6 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-cinzel font-bold text-lg text-white mb-4 border-b border-limbus-border pb-2">MAINTENANCE CONTROLS</h3>
+                        <div class="space-y-4 font-orbitron text-xs">
+                            <div>
+                                <label class="text-limbus-steel block mb-1">ENGINE OVERCLOCK</label>
+                                <div class="flex space-x-2">
+                                    <button onclick="setOverclock('normal')" id="oc-normal" class="flex-1 py-2 bg-limbus-crimson text-white font-bold border border-red-500">NORMAL</button>
+                                    <button onclick="setOverclock('turbo')" id="oc-turbo" class="flex-1 py-2 bg-black text-limbus-steel border border-limbus-border hover:text-white">TURBO</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-limbus-steel block mb-1">FUEL INJECTION PURGE</label>
+                                <button onclick="purgeFuel()" class="w-full py-2.5 bg-black hover:bg-limbus-crimson/20 border border-limbus-crimson text-limbus-crimsonBright font-bold transition">EXECUTE PURGE</button>
+                            </div>
+                            <div>
+                                <label class="text-limbus-steel block mb-1">CHARON AUTO-PILOT</label>
+                                <div class="p-3 bg-black/60 border border-limbus-border text-limbus-gold">
+                                    STATUS: ENGAGED<br>
+                                    <span class="text-[10px] text-limbus-steel">"Do not speak to Charon while driving."</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="bus-status-log" class="mt-4 p-3 bg-black border border-limbus-border font-mono text-[11px] text-emerald-400 h-24 overflow-y-auto">
+                        [SYS_LOG] Mephistopheles engine initialized successfully.<br>
+                        [SYS_LOG] Route to Golden Bough locked.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================= TAB 4: GOLDEN BOUGH ================= -->
+        <div id="tab-content-bough" class="hidden space-y-6">
+            <div class="border-b border-limbus-border pb-4">
+                <h2 class="font-cinzel font-black text-3xl text-white tracking-wider">GOLDEN BOUGH EXTRACTION</h2>
+                <p class="text-xs font-orbitron text-limbus-steel">ANOMALOUS ENERGY ARTIFACT MONITORING // LOBOTOMY CORP BRANCHES</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Bough Card 1 -->
+                <div class="bg-limbus-panel border border-limbus-border p-6 relative overflow-hidden group hover:border-limbus-gold transition">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full blur-xl pointer-events-none"></div>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-orbitron text-xs text-limbus-gold">SECTOR 4 - DISTRICT 10</span>
+                        <span class="px-2 py-0.5 bg-emerald-900/60 border border-emerald-500 text-emerald-400 font-orbitron text-[10px]">SECURED</span>
+                    </div>
+                    <h3 class="font-cinzel font-bold text-xl text-white mb-2">BRANCH 4 KETHER BOUGH</h3>
+                    <p class="text-limbus-steel text-xs mb-6 leading-relaxed">
+                        Extracted from the remnants of Lobotomy Corporation's branch office. High resonance frequency detected.
+                    </p>
+                    <div class="space-y-2 font-orbitron text-xs mb-6">
+                        <div class="flex justify-between text-limbus-steel">
+                            <span>RESONANCE:</span>
+                            <span class="text-limbus-gold font-bold">99.8%</span>
+                        </div>
+                        <div class="flex justify-between text-limbus-steel">
+                            <span>ENERGY YIELD:</span>
+                            <span class="text-white font-bold">45,000 ENFEH</span>
+                        </div>
+                    </div>
+                    <button onclick="inspectBough('Branch 4 Kether')" class="w-full py-2 bg-black hover:bg-limbus-gold hover:text-black border border-limbus-gold text-limbus-gold font-orbitron text-xs font-bold transition">
+                        VIEW EXTRACTION LOG
+                    </button>
+                </div>
+
+                <!-- Bough Card 2 -->
+                <div class="bg-limbus-panel border border-limbus-border p-6 relative overflow-hidden group hover:border-limbus-gold transition">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full blur-xl pointer-events-none"></div>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-orbitron text-xs text-limbus-gold">SECTOR 7 - DISTRICT 21</span>
+                        <span class="px-2 py-0.5 bg-amber-900/60 border border-amber-500 text-amber-400 font-orbitron text-[10px]">IN PROGRESS</span>
+                    </div>
+                    <h3 class="font-cinzel font-bold text-xl text-white mb-2">DISTRICT 21 RUINS BOUGH</h3>
+                    <p class="text-limbus-steel text-xs mb-6 leading-relaxed">
+                        Currently located beneath an abandoned Wing facility. Heavy syndicate resistance anticipated.
+                    </p>
+                    <div class="space-y-2 font-orbitron text-xs mb-6">
+                        <div class="flex justify-between text-limbus-steel">
+                            <span>RESONANCE:</span>
+                            <span class="text-amber-400 font-bold">78.4%</span>
+                        </div>
+                        <div class="flex justify-between text-limbus-steel">
+                            <span>ENERGY YIELD:</span>
+                            <span class="text-white font-bold">62,000 ENFEH</span>
+                        </div>
+                    </div>
+                    <button onclick="inspectBough('District 21 Ruins')" class="w-full py-2 bg-black hover:bg-limbus-gold hover:text-black border border-limbus-gold text-limbus-gold font-orbitron text-xs font-bold transition">
+                        DEPLOY SINNERS
+                    </button>
+                </div>
+
+                <!-- Bough Card 3 -->
+                <div class="bg-limbus-panel border border-limbus-border p-6 relative overflow-hidden group hover:border-limbus-gold transition">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full blur-xl pointer-events-none"></div>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-orbitron text-xs text-limbus-gold">SECTOR 12 - BACKSTREETS</span>
+                        <span class="px-2 py-0.5 bg-red-900/60 border border-limbus-crimson text-limbus-crimsonBright font-orbitron text-[10px]">LOCKED</span>
+                    </div>
+                    <h3 class="font-cinzel font-bold text-xl text-white mb-2">BACKSTREET CORE BOUGH</h3>
+                    <p class="text-limbus-steel text-xs mb-6 leading-relaxed">
+                        Requires authorization from Faust and higher corporate clearance before transit.
+                    </p>
+                    <div class="space-y-2 font-orbitron text-xs mb-6">
+                        <div class="flex justify-between text-limbus-steel">
+                            <span>RESONANCE:</span>
+                            <span class="text-limbus-crimsonBright font-bold">41.2%</span>
+                        </div>
+                        <div class="flex justify-between text-limbus-steel">
+                            <span>ENERGY YIELD:</span>
+                            <span class="text-white font-bold">UNKNOWN</span>
+                        </div>
+                    </div>
+                    <button onclick="inspectBough('Backstreet Core')" class="w-full py-2 bg-black hover:bg-limbus-crimson hover:text-white border border-limbus-crimson text-limbus-crimsonBright font-orbitron text-xs font-bold transition">
+                        REQUEST CLEARANCE
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================= TAB 5: ANNOUNCEMENTS ================= -->
+        <div id="tab-content-announcements" class="hidden space-y-6">
+            <div class="border-b border-limbus-border pb-4">
+                <h2 class="font-cinzel font-black text-3xl text-white tracking-wider">CORPORATE ANNOUNCEMENTS</h2>
+                <p class="text-xs font-orbitron text-limbus-steel">OFFICIAL MEMORANDUMS FROM LIMBUS COMPANY HEADQUARTERS</p>
+            </div>
+
+            <div class="space-y-4 font-orbitron">
+                <!-- Announcement Item -->
+                <div class="bg-limbus-panel border border-limbus-border p-6 border-l-4 border-l-limbus-crimson">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3">
+                        <span class="text-xs text-limbus-crimsonBright font-bold tracking-wider">[NOTICE] MANDATORY E.G.O GEAR CALIBRATION</span>
+                        <span class="text-[11px] text-limbus-steel">DATE: 2026.04.12 // AUTHOR: FAUST</span>
+                    </div>
+                    <h3 class="font-cinzel font-bold text-xl text-white mb-2">Regarding Sinner Corrosion Rates During Night Travel</h3>
+                    <p class="text-limbus-steel text-sm leading-relaxed mb-4 font-mono">
+                        All Managers are reminded to monitor Sinner sanity levels when traversing districts with high Distortion density. Failure to apply appropriate intervention will result in disciplinary action and salary deductions.
+                    </p>
+                    <div class="text-xs text-limbus-gold">STATUS: ACKNOWLEDGED BY DANTE</div>
+                </div>
+
+                <!-- Announcement Item 2 -->
+                <div class="bg-limbus-panel border border-limbus-border p-6 border-l-4 border-l-limbus-gold">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3">
+                        <span class="text-xs text-limbus-gold font-bold tracking-wider">[EVENT] LUNACY DISTRIBUTION & REWARDS</span>
+                        <span class="text-[11px] text-limbus-steel">DATE: 2026.04.01 // AUTHOR: HR DEPARTMENT</span>
+                    </div>
+                    <h3 class="font-cinzel font-bold text-xl text-white mb-2">Quarterly Golden Bough Extraction Bonus</h3>
+                    <p class="text-limbus-steel text-sm leading-relaxed mb-4 font-mono">
+                        In recognition of successful containment in Sector 4, all active Managers have been credited with 1,300 Lunacy. Please claim your rewards at the terminal before reset.
+                    </p>
+                    <div class="text-xs text-emerald-400">STATUS: CLAIMED</div>
+                </div>
+
+                <!-- Announcement Item 3 -->
+                <div class="bg-limbus-panel border border-limbus-border p-6 border-l-4 border-l-limbus-steel">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3">
+                        <span class="text-xs text-limbus-steel font-bold tracking-wider">[SYSTEM] SCHEDULED MAINTENANCE</span>
+                        <span class="text-[11px] text-limbus-steel">DATE: 2026.03.28 // AUTHOR: TECHNICIAN</span>
+                    </div>
+                    <h3 class="font-cinzel font-bold text-xl text-white mb-2">Mephistopheles Engine Overhaul</h3>
+                    <p class="text-limbus-steel text-sm leading-relaxed mb-4 font-mono">
+                        Mephistopheles will undergo routine blood-fuel filtration next Tuesday at 04:00. Sinners will remain secured in Cabin A during the procedure.
+                    </p>
+                    <div class="text-xs text-limbus-steel">STATUS: COMPLETED</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Custom Modal for Notifications / Inspections -->
+    <div id="custom-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-limbus-panel border-2 border-limbus-crimson max-w-md w-full p-6 relative box-glow animate-[scaleUp_0.2s_ease-out]">
+            <div class="flex justify-between items-center mb-4 border-b border-limbus-border pb-2">
+                <h3 class="font-cinzel font-bold text-lg text-white" id="modal-title">TERMINAL NOTIFICATION</h3>
+                <button onclick="closeModal()" class="text-limbus-steel hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <p class="text-limbus-steel font-mono text-sm mb-6" id="modal-body">Modal notification text goes here.</p>
+            <div class="flex justify-end font-orbitron text-xs">
+                <button onclick="closeModal()" class="px-6 py-2 bg-limbus-crimson hover:bg-red-700 text-white font-bold transition">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-limbus-border py-6 px-4 text-center mt-auto text-xs font-orbitron text-limbus-steel">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>© LIMBUS COMPANY. ALL RIGHTS RESERVED. PROJECT MOON INPIRED TERMINAL.</div>
+            <div class="flex space-x-4">
+                <span class="text-limbus-crimsonBright"><i class="fa-solid fa-shield-halved mr-1"></i>SECURE ENCLAVE</span>
+                <span>NODE: #LC-DISTRICT-04</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sinner Database
+        const sinnersData = [
+            {
+                id: 1,
+                name: "Yi Sang",
+                number: "No. 1",
+                title: "The Melancholic Architect",
+                origin: "N Corp. / League of Nine",
+                quote: "I have no wings, yet I fall endlessly into the mirror of thought.",
+                type: "fixer",
+                hp: "142 / 142",
+                sanity: "+15",
+                defense: "34",
+                speed: "3 - 7",
+                ego: "Crow's Eye View",
+                sins: ["Sloth", "Gluttony", "Gloom"],
+                avatar: "https://placehold.co/300x400/101115/d4af37?text=Yi+Sang"
+            },
+            {
+                id: 2,
+                name: "Faust",
+                number: "No. 2",
+                title: "The Omniscient Genius",
+                origin: "N Corp. Research Division",
+                quote: "Faust knows all outcomes. This is merely one of the inevitable paths.",
+                type: "fixer",
+                hp: "138 / 138",
+                sanity: "+20",
+                defense: "38",
+                speed: "4 - 8",
+                ego: "Telepole",
+                sins: ["Pride", "Lust", "Envy"],
+                avatar: "https://placehold.co/300x400/101115/ef4444?text=Faust"
+            },
+            {
+                id: 3,
+                name: "Don Quixote",
+                number: "No. 3",
+                title: "The Self-Proclaimed Fixer",
+                origin: "The Backstreets",
+                quote: "Hark! The wicked villains of the City shall tremble before our righteous justice!",
+                type: "syndicate",
+                hp: "160 / 160",
+                sanity: "+10",
+                defense: "30",
+                speed: "5 - 9",
+                ego: "La Sangre de Sancho",
+                sins: ["Lust", "Wrath", "Pride"],
+                avatar: "https://placehold.co/300x400/101115/d4af37?text=Don+Quixote"
+            },
+            {
+                id: 4,
+                name: "Ryoshu",
+                number: "No. 4",
+                title: "The Aesthete of Carnage",
+                origin: "The Syndicate",
+                quote: "Art requires passion. And passion requires exquisite, unfiltered violence.",
+                type: "syndicate",
+                hp: "155 / 155",
+                sanity: "+5",
+                defense: "32",
+                speed: "3 - 8",
+                ego: "Red Eyes",
+                sins: ["Wrath", "Pride", "Gluttony"],
+                avatar: "https://placehold.co/300x400/101115/ef4444?text=Ryoshu"
+            },
+            {
+                id: 5,
+                name: "Meursault",
+                number: "No. 5",
+                title: "The Absolute Pragmatist",
+                origin: "K Corp. Security",
+                quote: "Orders have been received. No further commentary is required.",
+                type: "fixer",
+                hp: "180 / 180",
+                sanity: "+15",
+                defense: "42",
+                speed: "2 - 6",
+                ego: "AEDD",
+                sins: ["Gluttony", "Envy", "Sloth"],
+                avatar: "https://placehold.co/300x400/101115/d4af37?text=Meursault"
+            },
+            {
+                id: 6,
+                name: "Hong Lu",
+                number: "No. 6",
+                title: "The Naive Aristocrat",
+                origin: "P Corp. High Nest",
+                quote: "My, everyone looks so tense! Is dying in the Backstreets really that scary?",
+                type: "fixer",
+                hp: "145 / 145",
+                sanity: "+10",
+                defense: "33",
+                speed: "4 - 7",
+                ego: "Land of Illusion",
+                sins: ["Lust", "Gluttony", "Pride"],
+                avatar: "https://placehold.co/300x400/101115/ef4444?text=Hong+Lu"
+            },
+            {
+                id: 7,
+                name: "Heathcliff",
+                number: "No. 7",
+                title: "The Brash Brawler",
+                origin: "Wuthering Heights / Backstreets",
+                quote: "I'll bash the lot of 'em! Don't test my patience today!",
+                type: "syndicate",
+                hp: "165 / 165",
+                sanity: "+5",
+                defense: "31",
+                speed: "4 - 9",
+                ego: "Bodysack",
+                sins: ["Wrath", "Lust", "Gluttony"],
+                avatar: "https://placehold.co/300x400/101115/d4af37?text=Heathcliff"
+            },
+            {
+                id: 8,
+                name: "Ishmael",
+                number: "No. 8",
+                title: "The Cynical Navigator",
+                origin: "Great Lake / U. Corp",
+                quote: "Keep your eyes on the road and your sanity in check. I didn't survive the sea for this.",
+                type: "fixer",
+                hp: "150 / 150",
+                sanity: "+15",
+                defense: "35",
+                speed: "4 - 8",
+                ego: "Bygone Days",
+                sins: ["Envy", "Gloom", "Prides"],
+                avatar: "https://placehold.co/300x400/101115/ef4444?text=Ishmael"
+            },
+            {
+                id: 9,
+                name: "Rodion",
+                number: "No. 9",
+                title: "The Carefree Gambler",
+                origin: "The Backstreets Syndicate",
+                quote: "Life's a gamble, Manager. Care to place your bets on our survival?",
+                type: "syndicate",
+                hp: "158 / 158",
+                sanity: "+10",
+                defense: "34",
+                speed: "3 - 7",
+                ego: "Sanguine Desire",
+                sins: ["Lust", "Sloth", "Gluttony"],
+                avatar: "https://placehold.co/300x400/101115/d4af37?text=Rodion"
+            },
+            {
+                id: 10,
+                name: "Sinclair",
+                number: "No. 10",
+                title: "The Hesitant Youth",
+                origin: "K Corp. Nest / Demian Circle",
+                quote: "I... I can do this. I won't run away anymore!",
+                type: "fixer",
+                hp: "135 / 135",
+                sanity: "+12",
+                defense: "29",
+                speed: "4 - 8",
+                ego: "Branch of Knowledge",
+                sins: ["Gloom", "Wrath", "Envy"],
+                avatar: "https://placehold.co/300x400/101115/ef4444?text=Sinclair"
+            },
+            {
+                id: 11,
+                name: "Outis",
+                number: "No. 11",
+                title: "The Calculating Tactician",
+                origin: "The Smoke War Veteran",
+                quote: "Whatever it takes to ensure the Manager's victory—that is my absolute order.",
+                type: "fixer",
+                hp: "148 / 148",
+                sanity: "+20",
+                defense: "37",
+                speed: "3 - 7",
+                ego: "To Pathos Mathos",
+                sins: ["Command", "Wrath", "Pride"],
+                avatar: "https://placehold.co/300x400/101115/d4af37?text=Outis"
+            },
+            {
+                id: 12,
+                name: "Gregor",
+                number: "No. 12",
+                title: "The Weary Veteran",
+                origin: "Smoke War / G Corp.",
+                quote: "This arm hasn't stopped itching since the war ended. Let's get this over with.",
+                type: "fixer",
+                hp: "162 / 162",
+                sanity: "+15",
+                defense: "39",
+                speed: "3 - 7",
+                ego: "Suddenly One Day",
+                sins: ["Sloth", "Gloom", "Wrath"],
+                avatar: "https://placehold.co/300x400/101115/ef4444?text=Gregor"
+            }
+        ];
+
+        let currentSelectedSinner = sinnersData[0];
+
+        // Clock Ticker
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('live-clock').innerText = `${hours}:${minutes}:${seconds}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Tab Switching
+        function switchTab(tabId) {
+            const tabs = ['dashboard', 'sinners', 'bus', 'bough', 'announcements'];
+            tabs.forEach(t => {
+                const content = document.getElementById(`tab-content-${t}`);
+                const btn = document.getElementById(`nav-${t}`);
+                if (t === tabId) {
+                    content.classList.remove('hidden');
+                    if (btn) {
+                        btn.classList.add('border-limbus-crimson', 'text-white', 'bg-black/40');
+                        btn.classList.remove('border-transparent', 'text-limbus-steel');
+                    }
+                } else {
+                    content.classList.add('hidden');
+                    if (btn) {
+                        btn.classList.remove('border-limbus-crimson', 'text-white', 'bg-black/40');
+                        btn.classList.add('border-transparent', 'text-limbus-steel');
+                    }
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Initialize Sinner Dashboard Grid and Sinner Roster
+        function initSinners() {
+            // Dashboard Grid (First 6)
+            const dashGrid = document.getElementById('dashboard-sinner-grid');
+            dashGrid.innerHTML = sinnersData.slice(0, 6).map(s => `
+                <div onclick="switchTab('sinners'); selectSinner(${s.id})" class="bg-limbus-panel border border-limbus-border hover:border-limbus-crimson p-3 cursor-pointer transition group text-center">
+                    <div class="h-28 bg-black mb-2 overflow-hidden border border-limbus-border relative flex items-center justify-center">
+                        <span class="font-cinzel text-limbus-gold font-bold text-lg">${s.number}</span>
+                        <div class="absolute inset-0 bg-limbus-crimson/10 opacity-0 group-hover:opacity-100 transition"></div>
+                    </div>
+                    <h4 class="font-cinzel font-bold text-white text-sm group-hover:text-limbus-crimsonBright transition">${s.name}</h4>
+                    <p class="text-[10px] text-limbus-steel font-orbitron truncate">${s.title}</p>
+                </div>
+            `).join('');
+
+            renderSinnerList(sinnersData);
+            selectSinner(1);
+        }
+
+        function renderSinnerList(list) {
+            const container = document.getElementById('sinner-list-container');
+            container.innerHTML = list.map(s => `
+                <div onclick="selectSinner(${s.id})" id="sinner-card-${s.id}" class="sinner-item p-3 border border-limbus-border hover:border-limbus-crimson cursor-pointer transition flex items-center space-x-3 bg-black/40 ${currentSelectedSinner.id === s.id ? 'border-limbus-crimson bg-limbus-crimson/10' : ''}">
+                    <div class="w-10 h-10 bg-black border border-limbus-gold flex items-center justify-center font-cinzel text-limbus-gold font-bold text-sm">
+                        ${s.number.replace('No. ', '')}
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="font-cinzel font-bold text-white text-sm">${s.name}</h4>
+                        <p class="text-[10px] text-limbus-steel font-orbitron">${s.title}</p>
+                    </div>
+                    <div class="text-limbus-crimsonBright text-xs">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectSinner(id) {
+            currentSelectedSinner = sinnersData.find(s => s.id === id);
+            
+            // Highlight active in list
+            document.querySelectorAll('.sinner-item').forEach(el => {
+                el.classList.remove('border-limbus-crimson', 'bg-limbus-crimson/10');
+            });
+            const activeCard = document.getElementById(`sinner-card-${id}`);
+            if (activeCard) {
+                activeCard.classList.add('border-limbus-crimson', 'bg-limbus-crimson/10');
+            }
+
+            // Render Dossier
+            const dossier = document.getElementById('sinner-dossier-panel');
+            dossier.innerHTML = `
+                <div class="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-limbus-crimson/10 to-transparent pointer-events-none"></div>
+                <div class="relative z-10 space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-limbus-border pb-4 gap-2">
+                        <div>
+                            <div class="flex items-center space-x-2 text-xs font-orbitron text-limbus-gold mb-1">
+                                <span>${currentSelectedSinner.number}</span>
+                                <span>//</span>
+                                <span>${currentSelectedSinner.origin}</span>
+                            </div>
+                            <h3 class="font-cinzel font-black text-3xl text-white">${currentSelectedSinner.name}</h3>
+                            <p class="text-xs text-limbus-steel font-orbitron">${currentSelectedSinner.title}</p>
+                        </div>
+                        <div class="px-3 py-1 bg-black border border-limbus-crimson text-limbus-crimsonBright font-orbitron text-xs">
+                            E.G.O SYNC: READY
+                        </div>
+                    </div>
+
+                    <div class="bg-black/60 p-4 border border-limbus-border italic text-limbus-steel font-mono text-sm border-l-4 border-l-limbus-crimson">
+                        "${currentSelectedSinner.quote}"
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 font-orbitron text-xs">
+                        <div class="bg-black/40 p-3 border border-limbus-border">
+                            <span class="text-limbus-steel block mb-1">HP STATUS</span>
+                            <span class="text-white font-bold text-sm">${currentSelectedSinner.hp}</span>
+                        </div>
+                        <div class="bg-black/40 p-3 border border-limbus-border">
+                            <span class="text-limbus-steel block mb-1">SANITY</span>
+                            <span class="text-emerald-400 font-bold text-sm">${currentSelectedSinner.sanity}</span>
+                        </div>
+                        <div class="bg-black/40 p-3 border border-limbus-border">
+                            <span class="text-limbus-steel block mb-1">DEFENSE</span>
+                            <span class="text-white font-bold text-sm">${currentSelectedSinner.defense}</span>
+                        </div>
+                        <div class="bg-black/40 p-3 border border-limbus-border">
+                            <span class="text-limbus-steel block mb-1">SPEED</span>
+                            <span class="text-limbus-gold font-bold text-sm">${currentSelectedSinner.speed}</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 font-orbitron text-xs">
+                        <div class="flex justify-between items-center bg-black/40 p-3 border border-limbus-border">
+                            <span class="text-limbus-steel">SIGNATURE E.G.O GEAR:</span>
+                            <span class="text-limbus-crimsonBright font-bold">${currentSelectedSinner.ego}</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-black/40 p-3 border border-limbus-border">
+                            <span class="text-limbus-steel">AFFINITY SINS:</span>
+                            <div class="flex space-x-2">
+                                ${currentSelectedSinner.sins.map(sin => `<span class="px-2 py-0.5 bg-limbus-crimson/20 border border-limbus-crimson text-white text-[10px]">${sin}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-limbus-border flex justify-end space-x-4">
+                        <button onclick="showModal('E.G.O Gear Activation', 'Synchronizing ${currentSelectedSinner.name} with E.G.O equipment. Corruption levels remain within safe parameters.')" class="px-6 py-2.5 bg-limbus-crimson hover:bg-red-700 text-white font-orbitron text-xs font-bold transition shadow-lg">
+                            ACTIVATE E.G.O
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterSinners(category) {
+            document.querySelectorAll('.sinner-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-limbus-crimson', 'text-white', 'border-red-500');
+                btn.classList.add('bg-black', 'text-limbus-steel', 'border-limbus-border');
+            });
+            event.target.classList.add('bg-limbus-crimson', 'text-white', 'border-red-500');
+            event.target.classList.remove('bg-black', 'text-limbus-steel', 'border-limbus-border');
+
+            if (category === 'all') {
+                renderSinnerList(sinnersData);
+            } else {
+                const filtered = sinnersData.filter(s => s.type === category);
+                renderSinnerList(filtered);
+            }
+        }
+
+        // Bus Diagnostics & Controls
+        function triggerBusDiagnostic() {
+            const icon = document.getElementById('diag-icon');
+            icon.classList.add('fa-spin');
+            
+            setTimeout(() => {
+                icon.classList.remove('fa-spin');
+                document.getElementById('stat-engine').innerText = "OPTIMAL (100%)";
+                document.getElementById('stat-fuel').innerText = "8,000 L (MAX)";
+                document.getElementById('stat-anomalies').innerText = "0 DETECTED";
+                showModal('Diagnostic Complete', 'All Mephistopheles subsystems are fully operational. Blood fuel purity is at 99.4%.');
+            }, 1000);
+        }
+
+        function setOverclock(mode) {
+            const normalBtn = document.getElementById('oc-normal');
+            const turboBtn = document.getElementById('oc-turbo');
+            const log = document.getElementById('bus-status-log');
+            
+            if (mode === 'normal') {
+                normalBtn.className = "flex-1 py-2 bg-limbus-crimson text-white font-bold border border-red-500";
+                turboBtn.className = "flex-1 py-2 bg-black text-limbus-steel border border-limbus-border hover:text-white";
+                log.innerHTML += `<br>[SYS_LOG] Mephistopheles reverted to normal cruising speed (110 km/h).`;
+            } else {
+                turboBtn.className = "flex-1 py-2 bg-limbus-crimson text-white font-bold border border-red-500";
+                normalBtn.className = "flex-1 py-2 bg-black text-limbus-steel border border-limbus-border hover:text-white";
+                log.innerHTML += `<br>[SYS_LOG] <span class="text-limbus-crimsonBright">WARNING:</span> Turbo Overclock engaged! Fuel consumption increased by 250%.`;
+            }
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function purgeFuel() {
+            const log = document.getElementById('bus-status-log');
+            log.innerHTML += `<br>[SYS_LOG] Executing blood-fuel filtration purge... Residue cleared.`;
+            log.scrollTop = log.scrollHeight;
+            showModal('Fuel Purge Successful', 'Mephistopheles injectors have been successfully cleared of Backstreet sediment.');
+        }
+
+        function inspectBough(boughName) {
+            showModal(`Golden Bough: ${boughName}`, `Resonance scan active. Energy harvesting yields are stable. No Distortion activity detected in the immediate vicinity.`);
+        }
+
+        // Modal Helpers
+        function showModal(title, body) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-body').innerText = body;
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            initSinners();
+        };
+    </script>
+</body>
+</html>
